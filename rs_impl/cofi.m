@@ -3,7 +3,7 @@
 
 fprintf('\n\nLoading movie ratings dataset...');
 %  Load data
-load ('ex8_movies.mat');
+load ('movies.mat');
 fprintf('\n\nSuccessfully loaded movie ratings database...\n\n');
 %  Y is a 1682x943 matrix, containing ratings (1-5) of 1682 movies on 
 %  943 users. you are not one among these users.
@@ -81,10 +81,10 @@ pause;
 %  Training the collaborative filtering model on a movie rating 
 %  dataset of 1682 movies and 943 users
 
-fprintf('\nTraining collaborative filtering model...\n');
+fprintf('\nTraining collaborative filtering model...\n\n\n');
 
 %  Load data
-load('ex8_movies.mat');
+load('movies.mat');
 
 %  Y is a 1682x943 matrix, containing ratings (1-5) of 1682 movies by 
 %  943 users
@@ -92,7 +92,7 @@ load('ex8_movies.mat');
 %  R is a 1682x943 matrix, where R(i,j) = 1 if and only if user j gave a
 %  rating to movie i
 
-%  Add movie ratings by new user to the data matrix
+%  Add movie ratings by new user to the data matrix in the first column
 Y = [my_ratings Y];
 R = [(my_ratings ~= 0) R];
 
@@ -120,10 +120,10 @@ theta = fmincg (@(t)(cofiCostFunc(t, Y, R, num_users, num_movies, num_features, 
 X = reshape(theta(1:num_movies*num_features), num_movies, num_features);
 Theta = reshape(theta(num_movies*num_features+1:end), num_users, num_features);
 
-fprintf('Recommender system learning completed...\n');
+fprintf('\n\nRecommender system learning completed...\n');
 
 
-fprintf('\nProgram paused. Press enter to continue.\n');
+fprintf('\nProgram paused. Press enter to continue...\n');
 pause;
 
 
@@ -133,9 +133,21 @@ pause;
 
 p = X * Theta';
 
+while 1
+
+fprintf('\n\n');
+id = input('Enter User_ID for whom you want to recommend movies(new user id=1):    ');
+
+% error checking for user_ID
+ycols = size(Y, 2);
+if id<1 || id>ycols  % if the col numbered 'id' does not exist in matrix Y
+    fprintf('\n\nERROR: The User_ID you entered does not exist in the database. Try again\n\n');
+    continue;
+end
+
 % The ratings database was normalized earlier by subtracting the mean. 
 % So, now add back the mean to make it non-normalized
-my_predictions = p(:,1) + Ymean;
+my_predictions = p(:,id) + Ymean;   % new user is put in the first col in the ratings database i.e, id=1
 
 movieList = loadMovieList();
 
@@ -146,14 +158,18 @@ for i=1:10
     fprintf('Predicting rating %.1f for movie %s\n', my_predictions(j), movieList{j});
 end
 
-fprintf('\n\nOriginal ratings provided:\n');
-for i = 1:length(my_ratings)
-    if my_ratings(i) > 0 
-        fprintf('Rated %d for %s\n', my_ratings(i), movieList{i});
-    end
+%fprintf('\n\nOriginal ratings provided:\n');
+%for i = 1:length(my_ratings)
+%    if my_ratings(i) > 0 
+%        fprintf('Rated %d for %s\n', my_ratings(i), movieList{i});
+%    end
+%end
+fprintf('\n\n');
+rec = input('More recommendations? [Y/N]:    ', 's');
+if upper(rec)=='N'
+	break;
 end
-
-
+end     % end of while 1
 %end	% end of if choice==2
 
 
