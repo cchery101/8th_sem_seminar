@@ -24,10 +24,25 @@ choice = input('Enter your choice:  ');
 
 if choice==1
 
+
+while 1
 %  compute average rating
 fprintf('\n\n');
 num = input('Enter the id of the movie whose average rating you wish to see:  ');
-fprintf('Average rating for movie %d (%s) : %f / 5\n\n', num, movieList{num}, mean(Y(num, R(num, :))));
+% error checking for num
+yrows = size(Y, 1);
+if num<1 || num>yrows  % if the row numbered 'num' does not exist in matrix Y
+    fprintf('\n\nERROR: The movie number you entered does not exist in the database. Try again\n\n');
+    continue;
+end
+fprintf('\n\nAverage rating for movie %d (%s) : %f / 5\n\n', num, movieList{num}, mean(Y(num, R(num, :))));
+fprintf('\n\n');
+more = input('Want to see more average movie ratings ? [Y/N] :  ','s');
+if upper(more)=='N'
+	break;
+end
+end % end of while 1
+
 
 %end	% end of if choice==1
 
@@ -36,12 +51,11 @@ pause;
 
 
 elseif choice == 2
-fprintf('\n\nBefore we begin to train the collaborative filtering model, please enter the movie ratings for the new user(optional)...\n\n');
+fprintf('\n\nBefore we begin to train the collaborative filtering model, please enter the movie ratings for the new user (optional)...\n\n');
 %% ============== Entering ratings for a new user ===============
 %  Before we train the collaborative filtering model, we will first
 %  add ratings that correspond to a new user
 
-movieList = loadMovieList();	% movieList{} is a cell array which contains names of all movies
 
 %  Initialize my ratings to all zeroes
 my_ratings = zeros(1682, 1);
@@ -83,14 +97,6 @@ pause;
 
 fprintf('\nTraining collaborative filtering model...\n\n\n');
 
-%  Load data
-load('movies.mat');
-
-%  Y is a 1682x943 matrix, containing ratings (1-5) of 1682 movies by 
-%  943 users
-%
-%  R is a 1682x943 matrix, where R(i,j) = 1 if and only if user j gave a
-%  rating to movie i
 
 %  Add movie ratings by new user to the data matrix in the first column
 Y = [my_ratings Y];
@@ -149,7 +155,6 @@ end
 % So, now add back the mean to make it non-normalized
 my_predictions = p(:,id) + Ymean;   % new user is put in the first col in the ratings database i.e, id=1
 
-movieList = loadMovieList();
 
 [r, ix] = sort(my_predictions, 'descend');
 fprintf('\n\nTop 10 movie recommendations for you:\n\n');
@@ -158,19 +163,13 @@ for i=1:10
     fprintf('Predicting rating %.1f for movie %s\n', my_predictions(j), movieList{j});
 end
 
-%fprintf('\n\nOriginal ratings provided:\n');
-%for i = 1:length(my_ratings)
-%    if my_ratings(i) > 0 
-%        fprintf('Rated %d for %s\n', my_ratings(i), movieList{i});
-%    end
-%end
+
 fprintf('\n\n');
 rec = input('More recommendations? [Y/N]:    ', 's');
 if upper(rec)=='N'
 	break;
 end
 end     % end of while 1
-%end	% end of if choice==2
 
 
 elseif choice==3
